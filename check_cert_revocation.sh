@@ -45,15 +45,15 @@ check_revocation_status() {
     fi
 
     # Last ned utstederens sertifikat
-    wget -q -O issuer.pem "$issuer_url"
-    if [ ! -s issuer.pem ]; then
+    wget -q -O _issuer.pem "$issuer_url"
+    if [ ! -s _issuer.pem ]; then
         echo "Kunne ikke laste ned eller fant ikke et gyldig utstedersertifikat."
         return 1
     fi
 
     # Sjekk sertifikatet mot OCSP
-    echo "$cert" > cert.pem
-    response=$(openssl ocsp -issuer issuer.pem -cert cert.pem -url "$ocsp_url" -CAfile issuer.pem -text 2>&1)
+    echo "$cert" > _cert.pem
+    response=$(openssl ocsp -issuer _issuer.pem -cert _cert.pem -url "$ocsp_url" -CAfile _issuer.pem -text 2>&1)
 
     if echo "$response" | grep -q "Cert Status: revoked"; then
         echo "Sertifikatet for $domain er tilbakekalt!"
@@ -64,7 +64,7 @@ check_revocation_status() {
     fi
 
     # Rydd opp midlertidige filer
-    rm -f cert.pem issuer.pem
+    rm -f _cert.pem _issuer.pem
 }
 
 # Hovedprogrammet som kjører OCSP-sjekken
