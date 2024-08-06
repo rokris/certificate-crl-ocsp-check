@@ -7,8 +7,16 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.x509.oid import ExtensionOID
 from ocspchecker import ocspchecker
 
-RED_COLOR = "\033[91m"
-RESET_COLOR = "\033[0m"
+# ANSI escape codes for color
+RED = "\033[91m"
+GREEN = "\033[92m"
+RESET = "\033[0m"
+
+def print_error(message):
+    print(f"{RED}{message}{RESET}")
+
+def print_success(message):
+    print(f"{GREEN}{message}{RESET}")
 
 def get_certificate(host, port):
     context = ssl.create_default_context()
@@ -57,7 +65,7 @@ def is_cert_revoked(crl, serial_number, debug):
     for revoked_cert in crl:
         revoked_serial_number_hex = format_serial_number(revoked_cert.serial_number)
         if debug:
-            print(f"Tilbakekalt serienummer i CRL: {revoked_serial_number_hex}")
+            print_error(f"Tilbakekalt serienummer i CRL: {revoked_serial_number_hex}")
 
         if revoked_serial_number_hex == serial_number_hex:
             return True
@@ -71,15 +79,15 @@ def check_ocsp_status(domain, debug):
             if status_line:
                 status = status_line.split(':', 1)[1].strip()
                 if status != "GOOD":
-                    print(f"{RED_COLOR}OCSP Status: {status}{RESET_COLOR}")
+                    print_error(f"OCSP Status: {status}")
                 else:
-                    print(f"OCSP Status: {status}")
+                    print_success(f"OCSP Status: {status}")
             else:
-                print("OCSP Status: Unknown")
+                print_error("OCSP Status: Unknown")
         else:
-            print("OCSP Status: Unknown")
+            print_error("OCSP Status: Unknown")
     except Exception as e:
-        print(f"Feil ved OCSP sjekking: {e}")
+        print_error(f"Feil ved OCSP sjekking: {e}")
 
 def process_address(address, serial_list_file=None, debug=False):
     if "://" in address:
@@ -95,7 +103,7 @@ def process_address(address, serial_list_file=None, debug=False):
     try:
         cert = get_certificate(host, port)
     except Exception as e:
-        print(f"Feil ved henting av sertifikat fra {address}. Kontrollér at adressen og porten er korrekte, og at serveren svarer.")
+        print_error(f"Feil ved henting av sertifikat fra {address}. Kontrollér at adressen og porten er korrekte, og at serveren svarer.")
         print(f"Detaljer: {e}")
         return
 
@@ -110,27 +118,27 @@ def process_address(address, serial_list_file=None, debug=False):
                 serials = [line.split()[0].strip().upper() for line in file.readlines()]
                 
             if serial_number_hex in serials:
-                print(f"{RED_COLOR}Sertifikatets serienummer finnes i filen: {serial_list_file}{RESET_COLOR}")
+                print_error(f"Sertifikatets serienummer finnes i filen: {serial_list_file}")
             else:
-                print(f"Sertifikatets serienummer finnes ikke i filen: {serial_list_file}")
+                print_success(f"Sertifikatets serienummer finnes ikke i filen: {serial_list_file}")
         except FileNotFoundError:
-            print(f"Feil: Filen '{serial_list_file}' finnes ikke.")
+            print_error(f"Feil: Filen '{serial_list_file}' finnes ikke.")
             return
 
     crl_urls = get_crl_distribution_points(cert)
     if not crl_urls:
-        print("Ingen CRL-distribusjonspunkter funnet i sertifikatet.")
+        print_error("Ingen CRL-distribusjonspunkter funnet i sertifikatet.")
     else:
         for url in crl_urls:
             try:
                 crl = download_crl(url, debug)
                 if is_cert_revoked(crl, serial_number, debug):
-                    print(f"{RED_COLOR}Sertifikatet har blitt trukket tilbake i CRL.{RESET_COLOR}")
+                    print_error("Sertifikatet har blitt trukket tilbake i CRL.")
                     return
                 else:
-                    print("Sertifikatet er ikke trukket tilbake ifølge CRL.")
+                    print_success("Sertifikatet er ikke trukket tilbake ifølge CRL.")
             except Exception as e:
-                print(f"Kunne ikke laste ned eller analysere CRL fra {url}.")
+                print_error(f"Kunne ikke laste ned eller analysere CRL fra {url}.")
                 print(f"Detaljer: {e}")
                 continue
 
@@ -142,7 +150,7 @@ def main(server_list_file=None, serial_list_file=None, debug=False):
             with open(server_list_file, 'r') as file:
                 addresses = [line.strip() for line in file.readlines()]
         except FileNotFoundError:
-            print(f"Feil: Filen '{server_list_file}' finnes ikke.")
+            print_error(f"Feil: Filen '{server_list_file}' finnes ikke.")
             sys.exit(1)
 
         for address in addresses:
@@ -150,7 +158,7 @@ def main(server_list_file=None, serial_list_file=None, debug=False):
             process_address(address, serial_list_file, debug)
             print("-" * 50)
     else:
-        print("Feil: Ingen serverliste spesifisert.")
+        print_error("Feil: Ingen serverliste spesifisert.")
         sys.exit(1)
 
 if __name__ == "__main__":
