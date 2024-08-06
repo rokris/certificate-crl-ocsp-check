@@ -1,3 +1,42 @@
+"""
+Dette programmet utfører sjekk av SSL-sertifikater for en liste over servere.
+
+Programmet kan:
+1. Hente og analysere SSL-sertifikatet fra en spesifisert server.
+2. Ekstrahere sertifikatets serienummer og sammenligne det med en liste over kjente serienumre.
+3. Hente CRL (Certificate Revocation List) fra sertifikatets CRL-distribusjonspunkter og sjekke om sertifikatet er trukket tilbake.
+4. Sjekke OCSP (Online Certificate Status Protocol)-statusen for å fastslå om sertifikatet er gyldig eller tilbakekalt.
+
+Funksjoner:
+- `print_error(message)`: Skriver ut en feilmelding i rød farge.
+- `print_success(message)`: Skriver ut en suksessmelding i grønn farge.
+- `get_certificate(host, port)`: Henter SSL-sertifikatet fra en gitt vert og port.
+- `extract_serial_number(cert)`: Ekstraherer serienummeret fra et sertifikat.
+- `format_serial_number(serial_number)`: Formaterer et serienummer til heksadesimal format.
+- `get_crl_distribution_points(cert)`: Henter CRL-distribusjonspunktene fra et sertifikat.
+- `download_crl(url, debug)`: Laster ned CRL fra en gitt URL.
+- `is_cert_revoked(crl, serial_number, debug)`: Sjekker om et sertifikat er trukket tilbake ifølge en CRL.
+- `check_ocsp_status(domain, debug)`: Sjekker OCSP-statusen for en gitt domene.
+- `process_address(address, serial_list_file=None, debug=False)`: Prosesserer en serveradresse, sjekker sertifikatet mot CRL og OCSP.
+- `main(server_list_file=None, serial_list_file=None, debug=False)`: Hovedfunksjonen som leser serveradresser fra en fil og prosesserer hver adresse.
+
+Parametere:
+- `server_list_file` (str, optional): Fil som inneholder en liste over serveradresser som skal prosesseres.
+- `serial_list_file` (str, optional): Fil som inneholder kjente serienumre for sammenligning.
+- `debug` (bool, optional): Aktiverer detaljert feilsøkingsinformasjon. Default er False.
+
+Utgangskoder:
+- `0`: Programmet kjørte vellykket og fullførte alle sjekker.
+- `1`: En feil oppstod, for eksempel hvis en fil ikke ble funnet, eller hvis et sertifikat ble trukket tilbake.
+
+Bruk:
+    python script.py --serverlist=<fil> [fil med serienumre] [--debug]
+
+Forutsetninger:
+- Programmet krever at `ocspchecker`-modulen er installert.
+- Det kreves også at `cryptography`- og `requests`-modulene er installert.
+"""
+
 import sys
 import socket
 import ssl
