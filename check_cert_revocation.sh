@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Funksjon for å hente sertifikatet fra en gitt URL, FTP eller SMTP
+# Funksjon for å hente sertifikatet fra en gitt URL, WEB, FTP eller SMTP
 get_certificate() {
     local domain=$1
     local port=$2
