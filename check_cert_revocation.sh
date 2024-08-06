@@ -1,5 +1,16 @@
 #!/bin/bash
 
+# Skriptet krever følgende for å kunne kjøres:
+# - Unix-lignende OS som Linux eller macOS med Bash-skall.
+# - `openssl`-verktøyet for håndtering av SSL-sertifikater og OCSP-sjekker.
+# - `wget`-verktøyet for nedlasting av utstedersertifikater.
+# - Internettforbindelse for å hente sertifikater og kommunisere med OCSP-servere.
+# - Tilgangsrettigheter for å kjøre `openssl`, `wget` og for å opprette/slette midlertidige filer.
+# - Minst én inngangsparameter (`domain:port`) må oppgis ved kjøring.
+# - Opsjonelle parametere: `--web`, `--ftp`, `--smtp` for protokollvalg og `--showcert` for å vise sertifikatdetaljer.
+# - Domenenavn/IP-adresser og porter må være korrekte og serverne må være tilgjengelige over nettverket.
+# - Skriptet oppretter midlertidige filer (`_cert.pem`, `_issuer.pem`) i arbeidskatalogen og krever tilstrekkelig diskplass og rettigheter.
+
 # Funksjon for å fargelegge meldinger
 color_echo() {
     local color=$1
