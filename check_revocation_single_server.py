@@ -25,6 +25,17 @@ Parametere:
       sertifikatets serienummer.
     - [--debug]: (Valgfritt) Aktiverer detaljert feilsøkingsinformasjon under utførelsen.
 
+Filformater:
+1. **Serienummerliste-fil** (`serial_list_file`):
+   - Format: Tekstfil (.txt)
+   - Hver linje i filen inneholder et serienummer i heksadesimalt format. Eventuelle ekstra felt etter serienummeret blir ignorert.
+   - Serienumrene kan være i store eller små bokstaver, men blir normalisert til store bokstaver i programmet.
+   - Eksempel:
+     ```
+     0123456789ABCDEF0123456789ABCDEF
+     ABCD1234EF567890ABCD1234EF567890
+     ```
+
 Utgangskoder:
     - 0: Suksess. Sertifikatet er gyldig og ikke tilbakekalt.
     - 1: Feil. En feil oppstod under sertifikatvalidering eller sjekkene indikerer at sertifikatet ikke er gyldig.

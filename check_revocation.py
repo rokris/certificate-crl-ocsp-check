@@ -25,6 +25,28 @@ Parametere:
 - `serial_list_file` (str, optional): Fil som inneholder kjente serienumre for sammenligning.
 - `debug` (bool, optional): Aktiverer detaljert feilsøkingsinformasjon. Default er False.
 
+Filformater:
+1. **Serverliste-fil** (`server_list_file`):
+   - Format: Tekstfil (.txt)
+   - Hver linje i filen inneholder en serveradresse, enten som IP-adresse eller domenenavn.
+   - Valgfritt: Serverport kan spesifiseres ved å legge til `:<port>` etter adressen.
+   - Eksempel:
+     ```
+     example.com
+     192.168.1.1:8443
+     another-example.com:443
+     ```
+
+2. **Serienummerliste-fil** (`serial_list_file`):
+   - Format: Tekstfil (.txt)
+   - Hver linje i filen inneholder et serienummer i heksadesimalt format. Eventuelle ekstra felt etter serienummeret blir ignorert.
+   - Serienumrene kan være i store eller små bokstaver, men blir normalisert til store bokstaver i programmet.
+   - Eksempel:
+     ```
+     0123456789ABCDEF0123456789ABCDEF
+     ABCD1234EF567890ABCD1234EF567890
+     ```
+
 Utgangskoder:
 - `0`: Programmet kjørte vellykket og fullførte alle sjekker.
 - `1`: En feil oppstod, for eksempel hvis en fil ikke ble funnet, eller hvis et sertifikat ble trukket tilbake.
