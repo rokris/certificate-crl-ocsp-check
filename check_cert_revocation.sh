@@ -1,5 +1,24 @@
 #!/bin/bash
 
+# Funksjon for å fargelegge meldinger
+color_echo() {
+    local color=$1
+    local message=$2
+    local reset="\033[0m"
+
+    case $color in
+        red)
+            echo -e "\033[31m$message$reset"
+            ;;
+        green)
+            echo -e "\033[32m$message$reset"
+            ;;
+        *)
+            echo "$message"  # Uten farge
+            ;;
+    esac
+}
+
 # Funksjon for å hente sertifikatet fra en gitt URL, WEB, FTP eller SMTP
 get_certificate() {
     local domain=$1
@@ -29,7 +48,7 @@ show_certificate() {
     cert=$(get_certificate "$domain" "$port" "$protocol")
 
     if [ -z "$cert" ]; then
-        echo "Kunne ikke hente sertifikatet for $domain."
+        color_echo "red" "Kunne ikke hente sertifikatet for $domain."
         return 1
     fi
 
@@ -48,7 +67,7 @@ check_revocation_status() {
     cert=$(get_certificate "$domain" "$port" "$protocol")
 
     if [ -z "$cert" ]; then
-        echo "Kunne ikke hente sertifikatet for $domain."
+        color_echo "red" "Kunne ikke hente sertifikatet for $domain."
         return 1
     fi
 
@@ -66,7 +85,7 @@ check_revocation_status() {
     ocsp_url=$(echo "$cert" | openssl x509 -noout -ocsp_uri)
 
     if [ -z "$ocsp_url" ]; then
-        echo "Kunne ikke finne OCSP URL i sertifikatet."
+        color_echo "red" "Kunne ikke finne OCSP URL i sertifikatet."
         return 1
     fi
 
@@ -74,14 +93,14 @@ check_revocation_status() {
     issuer_url=$(echo "$cert" | openssl x509 -text -noout | grep -A1 "CA Issuers" | grep -o 'http[^ ]*')
 
     if [ -z "$issuer_url" ]; then
-        echo "Kunne ikke finne utstederens sertifikat URL."
+        color_echo "red" "Kunne ikke finne utstederens sertifikat URL."
         return 1
     fi
 
     # Last ned utstederens sertifikat
     wget -q -O _issuer.pem "$issuer_url"
     if [ ! -s _issuer.pem ]; then
-        echo "Kunne ikke laste ned eller fant ikke et gyldig utstedersertifikat."
+        color_echo "red" "Kunne ikke laste ned eller fant ikke et gyldig utstedersertifikat."
         return 1
     fi
 
@@ -90,11 +109,11 @@ check_revocation_status() {
     response=$(openssl ocsp -issuer _issuer.pem -cert _cert.pem -url "$ocsp_url" -CAfile _issuer.pem -text 2>&1)
 
     if echo "$response" | grep -q "Cert Status: revoked"; then
-        echo "Sertifikatet for $domain er tilbakekalt!"
+        color_echo "red" "Sertifikatet for $domain er tilbakekalt!"
     elif echo "$response" | grep -q "Cert Status: good"; then
-        echo "Sertifikatet for $domain er gyldig og ikke tilbakekalt."
+        color_echo "green" "Sertifikatet for $domain er gyldig og ikke tilbakekalt."
     else
-        echo "Kunne ikke bestemme statusen til sertifikatet for $domain. Respons: $response"
+        color_echo "red" "Kunne ikke bestemme statusen til sertifikatet for $domain. Respons: $response"
     fi
 
     # Rydd opp midlertidige filer
