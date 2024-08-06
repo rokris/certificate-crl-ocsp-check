@@ -4,29 +4,48 @@
 get_certificate() {
     local domain=$1
     local port=$2
-    local starttls=$3
+    local protocol=$3
 
-    case "$starttls" in
+    case "$protocol" in
         ftp)
-            openssl s_client -connect "$domain:$port" -starttls ftp </dev/null 2>/dev/null | openssl x509
+            echo | openssl s_client -connect "$domain:$port" -starttls ftp 2>/dev/null | openssl x509
             ;;
         smtp)
-            openssl s_client -connect "$domain:$port" -starttls smtp </dev/null 2>/dev/null | openssl x509
+            echo | openssl s_client -connect "$domain:$port" -starttls smtp 2>/dev/null | openssl x509
             ;;
-        *)
-            openssl s_client -connect "$domain:$port" -servername "$domain" </dev/null 2>/dev/null | openssl x509
+        web)
+            echo | openssl s_client -connect "$domain:$port" -servername "$domain" 2>/dev/null | openssl x509
             ;;
     esac
+}
+
+# Funksjon for å vise sertifikatdetaljer
+show_certificate() {
+    local domain=$1
+    local port=$2
+    local protocol=$3
+
+    # Hent sertifikat
+    cert=$(get_certificate "$domain" "$port" "$protocol")
+
+    if [ -z "$cert" ]; then
+        echo "Kunne ikke hente sertifikatet for $domain."
+        return 1
+    fi
+
+    # Skriv ut sertifikatdetaljer
+    echo "Sertifikatdetaljer for $domain:$port:"
+    echo "$cert" | openssl x509 -text -noout
 }
 
 # Funksjon for å sjekke om sertifikatet er tilbakekalt via OCSP
 check_revocation_status() {
     local domain=$1
     local port=$2
-    local starttls=$3
+    local protocol=$3
 
     # Hent sertifikat
-    cert=$(get_certificate "$domain" "$port" "$starttls")
+    cert=$(get_certificate "$domain" "$port" "$protocol")
 
     if [ -z "$cert" ]; then
         echo "Kunne ikke hente sertifikatet for $domain."
@@ -84,23 +103,24 @@ check_revocation_status() {
 
 # Hovedprogrammet som kjører OCSP-sjekken
 main() {
-    if [ $# -lt 1 ] || [ $# -gt 2 ]; then
-        echo "Bruk: $0 <domain:port> [--ftp | --smtp]"
+    if [ $# -lt 1 ] || [ $# -gt 3 ]; then
+        echo "Bruk: $0 <domain:port> [--web | --ftp | --smtp] [--showcert]"
         exit 1
     fi
 
     # Håndter inputparametere
     input=$1
-    starttls=$2
+    protocol=$2
+    showcert=$3
 
     # Split domain og port fra input
     IFS=':' read -r domain port <<< "$input"
     
     # Sett standard port hvis ikke angitt
     if [ -z "$port" ]; then
-        if [ "$starttls" = "--ftp" ]; then
+        if [ "$protocol" = "--ftp" ]; then
             port=21
-        elif [ "$starttls" = "--smtp" ]; then
+        elif [ "$protocol" = "--smtp" ]; then
             port=25
         else
             port=443
@@ -108,16 +128,20 @@ main() {
     fi
 
     # Sett starttls-verdi basert på parameter
-    if [ "$starttls" = "--ftp" ]; then
-        starttls="ftp"
-    elif [ "$starttls" = "--smtp" ]; then
-        starttls="smtp"
+    if [ "$protocol" = "--ftp" ]; then
+        protocol="ftp"
+    elif [ "$protocol" = "--smtp" ]; then
+        protocol="smtp"
     else
-        starttls=""
+        protocol="web"
     fi
 
-    # Kjør sjekk
-    check_revocation_status "$domain" "$port" "$starttls"
+    if [ "$showcert" = "--showcert" ]; then
+        show_certificate "$domain" "$port" "$protocol"
+        check_revocation_status "$domain" "$port" "$protocol"
+    else
+        check_revocation_status "$domain" "$port" "$protocol"
+    fi
 }
 
 main "$@"
