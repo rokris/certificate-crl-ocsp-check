@@ -146,7 +146,7 @@ main() {
         fi
     fi
 
-    # Sett starttls-verdi basert på parameter
+    # Sett protocol-verdi basert på parameter
     if [ "$protocol" = "--ftp" ]; then
         protocol="ftp"
     elif [ "$protocol" = "--smtp" ]; then
