@@ -1,17 +1,32 @@
 #!/bin/bash
 
-# Funksjon for å hente sertifikatet fra en gitt URL
+# Funksjon for å hente sertifikatet fra en gitt URL, FTP eller SMTP
 get_certificate() {
     local domain=$1
-    openssl s_client -connect "$domain:443" -servername "$domain" </dev/null 2>/dev/null | openssl x509
+    local port=$2
+    local starttls=$3
+
+    case "$starttls" in
+        ftp)
+            openssl s_client -connect "$domain:$port" -starttls ftp </dev/null 2>/dev/null | openssl x509
+            ;;
+        smtp)
+            openssl s_client -connect "$domain:$port" -starttls smtp </dev/null 2>/dev/null | openssl x509
+            ;;
+        *)
+            openssl s_client -connect "$domain:$port" -servername "$domain" </dev/null 2>/dev/null | openssl x509
+            ;;
+    esac
 }
 
 # Funksjon for å sjekke om sertifikatet er tilbakekalt via OCSP
 check_revocation_status() {
     local domain=$1
+    local port=$2
+    local starttls=$3
 
     # Hent sertifikat
-    cert=$(get_certificate "$domain")
+    cert=$(get_certificate "$domain" "$port" "$starttls")
 
     if [ -z "$cert" ]; then
         echo "Kunne ikke hente sertifikatet for $domain."
@@ -69,14 +84,40 @@ check_revocation_status() {
 
 # Hovedprogrammet som kjører OCSP-sjekken
 main() {
-    if [ $# -ne 1 ]; then
-        echo "Bruk: $0 <domain>"
+    if [ $# -lt 1 ] || [ $# -gt 2 ]; then
+        echo "Bruk: $0 <domain:port> [--ftp | --smtp]"
         exit 1
     fi
 
-    domain=$1
-    check_revocation_status "$domain"
+    # Håndter inputparametere
+    input=$1
+    starttls=$2
+
+    # Split domain og port fra input
+    IFS=':' read -r domain port <<< "$input"
+    
+    # Sett standard port hvis ikke angitt
+    if [ -z "$port" ]; then
+        if [ "$starttls" = "--ftp" ]; then
+            port=21
+        elif [ "$starttls" = "--smtp" ]; then
+            port=25
+        else
+            port=443
+        fi
+    fi
+
+    # Sett starttls-verdi basert på parameter
+    if [ "$starttls" = "--ftp" ]; then
+        starttls="ftp"
+    elif [ "$starttls" = "--smtp" ]; then
+        starttls="smtp"
+    else
+        starttls=""
+    fi
+
+    # Kjør sjekk
+    check_revocation_status "$domain" "$port" "$starttls"
 }
 
 main "$@"
-
