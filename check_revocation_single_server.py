@@ -7,6 +7,17 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.x509.oid import ExtensionOID
 from ocspchecker import ocspchecker
 
+# ANSI escape codes for color
+RED = "\033[91m"
+GREEN = "\033[92m"
+RESET = "\033[0m"
+
+def print_error(message):
+    print(f"{RED}{message}{RESET}")
+
+def print_success(message):
+    print(f"{GREEN}{message}{RESET}")
+
 def get_certificate(host, port):
     context = ssl.create_default_context()
     with socket.create_connection((host, port)) as sock:
@@ -69,13 +80,16 @@ def check_ocsp_status(domain, debug):
             status_line = next((line for line in ocsp_result if 'OCSP Status:' in line), None)
             if status_line:
                 status = status_line.split(':', 1)[1].strip()  # Henter statusen etter 'OCSP Status:'
-                print(f"OCSP Status: {status}")
+                if status.lower() == 'good':
+                    print_success(f"OCSP Status: {status}")
+                else:
+                    print_error(f"OCSP Status: {status}")
             else:
-                print("OCSP Status: Unknown")
+                print_error("OCSP Status: Unknown")
         else:
-            print("OCSP Status: Unknown")
+            print_error("OCSP Status: Unknown")
     except Exception as e:
-        print(f"Feil ved OCSP sjekking: {e}")
+        print_error(f"Feil ved OCSP sjekking: {e}")
 
 def main(address, serial_list_file=None, debug=False):
     if "://" in address:
@@ -91,8 +105,8 @@ def main(address, serial_list_file=None, debug=False):
     try:
         cert = get_certificate(host, port)
     except Exception as e:
-        print(f"Feil ved henting av sertifikat fra {address}. Kontrollér at adressen og porten er korrekte, og at serveren svarer.")
-        print(f"Detaljer: {e}")
+        print_error(f"Feil ved henting av sertifikat fra {address}. Kontrollér at adressen og porten er korrekte, og at serveren svarer.")
+        print_error(f"Detaljer: {e}")
         sys.exit(1)
 
     serial_number = extract_serial_number(cert)
@@ -106,28 +120,28 @@ def main(address, serial_list_file=None, debug=False):
                 serials = [line.split()[0].strip().upper() for line in file.readlines()]
                 
             if serial_number_hex in serials:
-                print(f"Sertifikatets serienummer finnes i filen: {serial_list_file}")
+                print_error(f"Sertifikatets serienummer finnes i filen: {serial_list_file}")
             else:
-                print(f"Sertifikatets serienummer finnes ikke i filen: {serial_list_file}")
+                print_success(f"Sertifikatets serienummer finnes ikke i filen: {serial_list_file}")
         except FileNotFoundError:
-            print(f"Feil: Filen '{serial_list_file}' finnes ikke.")
+            print_error(f"Feil: Filen '{serial_list_file}' finnes ikke.")
             sys.exit(1)
 
     crl_urls = get_crl_distribution_points(cert)
     if not crl_urls:
-        print("Ingen CRL-distribusjonspunkter funnet i sertifikatet.")
+        print_error("Ingen CRL-distribusjonspunkter funnet i sertifikatet.")
     else:
         for url in crl_urls:
             try:
                 crl = download_crl(url, debug)
                 if is_cert_revoked(crl, serial_number):
-                    print("Sertifikatet har blitt trukket tilbake i CRL.")
+                    print_error("Sertifikatet har blitt trukket tilbake i CRL.")
                     sys.exit(1)
                 else:
-                    print("Sertifikatet er ikke trukket tilbake ifølge CRL.")
+                    print_success("Sertifikatet er ikke trukket tilbake ifølge CRL.")
             except Exception as e:
-                print(f"Kunne ikke laste ned eller analysere CRL fra {url}.")
-                print(f"Detaljer: {e}")
+                print_error(f"Kunne ikke laste ned eller analysere CRL fra {url}.")
+                print_error(f"Detaljer: {e}")
                 continue
 
     # Kall til OCSP sjekk
@@ -135,7 +149,7 @@ def main(address, serial_list_file=None, debug=False):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2 or len(sys.argv) > 4:
-        print("Bruk: python script.py <adresse> [fil med serienumre] [--debug]")
+        print_error("Bruk: python script.py <adresse> [fil med serienumre] [--debug]")
         sys.exit(1)
     
     address = sys.argv[1]
