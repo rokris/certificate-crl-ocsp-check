@@ -57,7 +57,8 @@ Filformater:
 
 Utgangskoder:
 - `0`: Programmet kjørte vellykket og fullførte alle sjekker.
-- `1`: En feil oppstod, for eksempel hvis en fil ikke ble funnet, eller hvis et sertifikat ble trukket tilbake.
+- `1`: En feil oppstod, for eksempel hvis en fil ikke ble funnet, eller hvis et sertifikat ble
+  trukket tilbake.
 
 Bruk:
     python script.py --serverlist=<fil> [fil med serienumre] [--debug]
