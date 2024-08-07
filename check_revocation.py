@@ -190,10 +190,10 @@ def download_crl(url, debug):
             raise ValueError(
                 f"Kunne ikke tolke CRL fra {url}. Innholdet kan ikke være i PEM- eller DER-format."
             ) from err
-    
+
     if debug:
         print("CRL lastet ned og tolket.")
-    
+
     return crl
 
 
@@ -300,7 +300,7 @@ def process_address(address, serial_list_file=None, debug=False):
                 serials = [
                     line.split()[0].strip().upper() for line in file.readlines()
                 ]
-                
+
             if serial_number_hex in serials:
                 print_error(f"Sertifikatets serienummer finnes i filen: {serial_list_file}")
             else:
