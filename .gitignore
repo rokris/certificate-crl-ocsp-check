@@ -1,6 +1,6 @@
 .idea
 .DS_Store
-.github/workflows
+.github/workflows/
 # Temp app files
 *.csv
 
