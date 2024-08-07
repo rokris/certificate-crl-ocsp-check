@@ -45,8 +45,10 @@ Filformater:
 
 2. **Serienummerliste-fil** (`serial_list_file`):
    - Format: Tekstfil (.txt)
-   - Hver linje i filen inneholder et serienummer i heksadesimalt format. Eventuelle ekstra felt etter serienummeret blir ignorert.
-   - Serienumrene kan være i store eller små bokstaver, men blir normalisert til store bokstaver i programmet.
+   - Hver linje i filen inneholder et serienummer i heksadesimalt format. Eventuelle ekstra
+     felt etter serienummeret blir ignorert.
+   - Serienumrene kan være i store eller små bokstaver, men blir normalisert til store
+     bokstaver i programmet.
    - Eksempel:
      ```
      0123456789ABCDEF0123456789ABCDEF
