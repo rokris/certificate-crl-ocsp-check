@@ -81,13 +81,16 @@ RED = "\033[91m"
 GREEN = "\033[92m"
 RESET = "\033[0m"
 
+
 def print_error(message):
     """Skriver ut en feilmelding i rød tekst."""
     print(f"{RED}{message}{RESET}")
 
+
 def print_success(message):
     """Skriver ut en suksessmelding i grønn tekst."""
     print(f"{GREEN}{message}{RESET}")
+
 
 def get_certificate(host, port):
     """
@@ -107,6 +110,7 @@ def get_certificate(host, port):
             der_cert = ssock.getpeercert(binary_form=True)
             return x509.load_der_x509_certificate(der_cert, default_backend())
 
+
 def extract_serial_number(cert):
     """
     Ekstraherer serienummeret fra et gitt sertifikat.
@@ -119,6 +123,7 @@ def extract_serial_number(cert):
     """
     return cert.serial_number
 
+
 def format_serial_number(serial_number):
     """
     Formaterer serienummeret som en heksadesimal streng med store bokstaver.
@@ -130,6 +135,7 @@ def format_serial_number(serial_number):
         str: Formaterte serienummer som en 32-tegns heksadesimal streng.
     """
     return format(serial_number, 'X').zfill(32).upper()
+
 
 def get_crl_distribution_points(cert):
     """
@@ -147,6 +153,7 @@ def get_crl_distribution_points(cert):
         return [point.full_name[0].value for point in cdp_extension.value if point.full_name]
     except x509.ExtensionNotFound:
         return []
+
 
 def download_crl(url, debug):
     """
@@ -172,13 +179,14 @@ def download_crl(url, debug):
     except ValueError:
         try:
             crl = x509.load_pem_x509_crl(response.content, default_backend())
-        except ValueError:
-            raise ValueError(f"Kunne ikke tolke CRL fra {url}. Innholdet kan ikke være i PEM- eller DER-format.")
+        except ValueError as err:
+            raise ValueError(f"Kunne ikke tolke CRL fra {url}. Innholdet kan ikke være i PEM- eller DER-format.") from err
     
     if debug:
         print("CRL lastet ned og tolket.")
     
     return crl
+
 
 def is_cert_revoked(crl, serial_number, debug):
     """
@@ -206,6 +214,7 @@ def is_cert_revoked(crl, serial_number, debug):
             return True
     return False
 
+
 def check_ocsp_status(domain, debug):
     """
     Sjekker OCSP-statusen for et gitt domene.
@@ -228,8 +237,9 @@ def check_ocsp_status(domain, debug):
                 print_error("OCSP Status: Unknown")
         else:
             print_error("OCSP Status: Unknown")
-    except Exception as e:
-        print_error(f"Feil ved OCSP sjekking: {e}")
+    except Exception as exc:
+        print_error(f"Feil ved OCSP sjekking: {exc}")
+
 
 def process_address(address, serial_list_file=None, debug=False):
     """
@@ -254,9 +264,9 @@ def process_address(address, serial_list_file=None, debug=False):
 
     try:
         cert = get_certificate(host, port)
-    except Exception as e:
+    except (socket.error, ssl.SSLError) as exc:
         print_error(f"Feil ved henting av sertifikat fra {address}. Kontrollér at adressen og porten er korrekte, og at serveren svarer.")
-        print(f"Detaljer: {e}")
+        print(f"Detaljer: {exc}")
         return
 
     # Ekstraherer og formaterer serienummeret til sertifikatet
@@ -268,7 +278,7 @@ def process_address(address, serial_list_file=None, debug=False):
     # Sjekker om sertifikatets serienummer finnes i en oppgitt fil
     if serial_list_file:
         try:
-            with open(serial_list_file, 'r') as file:
+            with open(serial_list_file, 'r', encoding='utf-8') as file:
                 serials = [line.split()[0].strip().upper() for line in file.readlines()]
                 
             if serial_number_hex in serials:
@@ -292,13 +302,14 @@ def process_address(address, serial_list_file=None, debug=False):
                     return
                 else:
                     print_success("Sertifikatet er ikke trukket tilbake ifølge CRL.")
-            except Exception as e:
+            except ValueError as exc:
                 print_error(f"Kunne ikke laste ned eller analysere CRL fra {url}.")
-                print(f"Detaljer: {e}")
+                print(f"Detaljer: {exc}")
                 continue
 
     # Utfør OCSP-sjekk
     check_ocsp_status(host, debug)
+
 
 def main(server_list_file=None, serial_list_file=None, debug=False):
     """
@@ -311,7 +322,7 @@ def main(server_list_file=None, serial_list_file=None, debug=False):
     """
     if server_list_file:
         try:
-            with open(server_list_file, 'r') as file:
+            with open(server_list_file, 'r', encoding='utf-8') as file:
                 addresses = [line.strip() for line in file.readlines()]
         except FileNotFoundError:
             print_error(f"Feil: Filen '{server_list_file}' finnes ikke.")
@@ -324,6 +335,7 @@ def main(server_list_file=None, serial_list_file=None, debug=False):
     else:
         print_error("Feil: Ingen serverliste spesifisert.")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     if len(sys.argv) < 2 or len(sys.argv) > 5:
