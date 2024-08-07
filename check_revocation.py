@@ -149,8 +149,14 @@ def get_crl_distribution_points(cert):
     """
     try:
         # Henter CRL-distribusjonspunkter fra sertifikatet
-        cdp_extension = cert.extensions.get_extension_for_oid(ExtensionOID.CRL_DISTRIBUTION_POINTS)
-        return [point.full_name[0].value for point in cdp_extension.value if point.full_name]
+        cdp_extension = cert.extensions.get_extension_for_oid(
+            ExtensionOID.CRL_DISTRIBUTION_POINTS
+        )
+        return [
+            point.full_name[0].value
+            for point in cdp_extension.value
+            if point.full_name
+        ]
     except x509.ExtensionNotFound:
         return []
 
@@ -180,7 +186,9 @@ def download_crl(url, debug):
         try:
             crl = x509.load_pem_x509_crl(response.content, default_backend())
         except ValueError as err:
-            raise ValueError(f"Kunne ikke tolke CRL fra {url}. Innholdet kan ikke være i PEM- eller DER-format.") from err
+            raise ValueError(
+                f"Kunne ikke tolke CRL fra {url}. Innholdet kan ikke være i PEM- eller DER-format."
+            ) from err
     
     if debug:
         print("CRL lastet ned og tolket.")
@@ -206,7 +214,9 @@ def is_cert_revoked(crl, serial_number, debug):
 
     # Itererer gjennom alle tilbakekalte sertifikater i CRL
     for revoked_cert in crl:
-        revoked_serial_number_hex = format_serial_number(revoked_cert.serial_number)
+        revoked_serial_number_hex = format_serial_number(
+            revoked_cert.serial_number
+        )
         if debug:
             print(f"Tilbakekalt serienummer i CRL: {revoked_serial_number_hex}")
 
@@ -226,7 +236,10 @@ def check_ocsp_status(domain, debug):
     try:
         ocsp_result = ocspchecker.get_ocsp_status(domain)
         if ocsp_result and isinstance(ocsp_result, list) and len(ocsp_result) > 0:
-            status_line = next((line for line in ocsp_result if 'OCSP Status:' in line), None)
+            status_line = next(
+                (line for line in ocsp_result if 'OCSP Status:' in line),
+                None
+            )
             if status_line:
                 status = status_line.split(':', 1)[1].strip()
                 if status != "GOOD":
@@ -248,7 +261,8 @@ def process_address(address, serial_list_file=None, debug=False):
 
     Args:
         address (str): Serveradressen (f.eks. "example.com" eller "https://example.com:443").
-        serial_list_file (str, optional): Fil som inneholder en liste over kjente serienumre for sammenligning.
+        serial_list_file (str, optional): Fil som inneholder en liste over kjente serienumre
+           for sammenligning.
         debug (bool, optional): Aktiverer detaljert feilsøkingsinformasjon. Default er False.
     """
     if "://" in address:
@@ -265,7 +279,10 @@ def process_address(address, serial_list_file=None, debug=False):
     try:
         cert = get_certificate(host, port)
     except (socket.error, ssl.SSLError) as exc:
-        print_error(f"Feil ved henting av sertifikat fra {address}. Kontrollér at adressen og porten er korrekte, og at serveren svarer.")
+        print_error(
+            f"Feil ved henting av sertifikat fra {address}. Kontrollér at adressen og "
+            f"porten er korrekte, og at serveren svarer."
+        )
         print(f"Detaljer: {exc}")
         return
 
@@ -279,12 +296,16 @@ def process_address(address, serial_list_file=None, debug=False):
     if serial_list_file:
         try:
             with open(serial_list_file, 'r', encoding='utf-8') as file:
-                serials = [line.split()[0].strip().upper() for line in file.readlines()]
+                serials = [
+                    line.split()[0].strip().upper() for line in file.readlines()
+                ]
                 
             if serial_number_hex in serials:
                 print_error(f"Sertifikatets serienummer finnes i filen: {serial_list_file}")
             else:
-                print_success(f"Sertifikatets serienummer finnes ikke i filen: {serial_list_file}")
+                print_success(
+                    f"Sertifikatets serienummer finnes ikke i filen: {serial_list_file}"
+                )
         except FileNotFoundError:
             print_error(f"Feil: Filen '{serial_list_file}' finnes ikke.")
             return
@@ -316,8 +337,10 @@ def main(server_list_file=None, serial_list_file=None, debug=False):
     Hovedfunksjonen som leser serveradresser fra en fil og prosesserer hver adresse.
 
     Args:
-        server_list_file (str, optional): Fil som inneholder en liste over serveradresser som skal prosesseres.
-        serial_list_file (str, optional): Fil som inneholder kjente serienumre for sammenligning.
+        server_list_file (str, optional): Fil som inneholder en liste over serveradresser
+            som skal prosesseres.
+        serial_list_file (str, optional): Fil som inneholder kjente serienumre for
+            sammenligning.
         debug (bool, optional): Aktiverer detaljert feilsøkingsinformasjon. Default er False.
     """
     if server_list_file:
