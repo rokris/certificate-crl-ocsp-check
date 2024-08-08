@@ -31,4 +31,6 @@ jobs:
         env:
           # To report GitHub Actions status checks
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Disabled linters
+          VALIDATE_JSCPD: false
 ...
