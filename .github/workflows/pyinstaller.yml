@@ -22,7 +22,7 @@ jobs:
           pip install --no-deps -r requirements.txt pyinstaller
       - name: Run PyInstaller
         run: |
-          python -m pyinstaller --onefile check_revocation.py
+          pyinstaller --onefile check_revocation.py
       - uses: actions/upload-artifact@v4
         with:
           name: Check Revocation
