@@ -8,7 +8,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.x509.oid import ExtensionOID
 from ocspchecker import ocspchecker
 
-# ANSI escape codes for color
+# ANSI escape-koder for farge
 RED = "\033[91m"
 GREEN = "\033[92m"
 RESET = "\033[0m"
