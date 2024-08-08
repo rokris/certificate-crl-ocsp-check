@@ -1,0 +1,13 @@
+jobs:
+  pyinstaller-build:
+    runs-on: windows-latest
+    steps:
+      - name: Create Executable
+        uses: sayyid5416/pyinstaller@v1
+        with:
+          python_ver: '3.10'
+          pyinstaller_ver: '==5.13.2'
+          spec: 'check_revocation.py'
+          requirements: 'requirements.txt'
+          upload_exe_with_name: 'check_revocation'
+          options: --onefile,
