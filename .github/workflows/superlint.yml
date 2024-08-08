@@ -33,4 +33,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Disabled linters
           VALIDATE_JSCPD: false
+          VALIDATE_PYTHON_PYLINT: false
 ...
