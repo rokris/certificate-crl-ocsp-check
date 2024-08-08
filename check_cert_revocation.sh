@@ -18,15 +18,15 @@ color_echo() {
 	local reset="\033[0m"
 
 	case $color in
-	red)
-		echo -e "$message$reset"
-		;;
-	green)
-		echo -e "$message$reset"
-		;;
-	*)
-		echo "$message" # Uten farge
-		;;
+		red)
+			echo -e "\033[31m$message$reset"
+			;;
+		green)
+			echo -e "\033[32m$message$reset"
+			;;
+		*)
+			echo "$message"  # Uten farge
+			;;
 	esac
 }
 
@@ -37,15 +37,15 @@ get_certificate() {
 	local protocol=$3
 
 	case "$protocol" in
-	ftp)
-		echo | openssl s_client -connect "$domain:$port" -starttls ftp 2>/dev/null | openssl x509
-		;;
-	smtp)
-		echo | openssl s_client -connect "$domain:$port" -starttls smtp 2>/dev/null | openssl x509
-		;;
-	web)
-		echo | openssl s_client -connect "$domain:$port" -servername "$domain" 2>/dev/null | openssl x509
-		;;
+		ftp)
+			echo | openssl s_client -connect "$domain:$port" -starttls ftp 2>/dev/null | openssl x509
+			;;
+		smtp)
+			echo | openssl s_client -connect "$domain:$port" -starttls smtp 2>/dev/null | openssl x509
+			;;
+		web)
+			echo | openssl s_client -connect "$domain:$port" -servername "$domain" 2>/dev/null | openssl x509
+			;;
 	esac
 }
 
@@ -116,7 +116,7 @@ check_revocation_status() {
 	fi
 
 	# Sjekk sertifikatet mot OCSP
-	echo "$cert" >_cert.pem
+	echo "$cert" > _cert.pem
 	response=$(openssl ocsp -issuer _issuer.pem -cert _cert.pem -url "$ocsp_url" -CAfile _issuer.pem -text 2>&1)
 
 	if echo "$response" | grep -q "Cert Status: revoked"; then
@@ -144,8 +144,8 @@ main() {
 	showcert=$3
 
 	# Split domain og port fra input
-	IFS=':' read -r domain port <<<"$input"
-
+	IFS=':' read -r domain port <<< "$input"
+	
 	# Sett standard port hvis ikke angitt
 	if [ -z "$port" ]; then
 		if [ "$protocol" = "--ftp" ]; then
