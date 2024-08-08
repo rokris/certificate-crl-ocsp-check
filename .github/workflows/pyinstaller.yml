@@ -9,7 +9,7 @@ permissions: { }
 
 jobs:
   build-windows:
-    runs-on: windows-2019
+    runs-on: windows-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -49,5 +49,5 @@ jobs:
         with:
           upload_url: ${{steps.create_release.outputs.upload_url}}
           asset_path: dist/check_revocation.exe
-          asset_name: check_revocation-amd64.exe
+          asset_name: check_revocation.exe
           asset_content_type: application/zip
