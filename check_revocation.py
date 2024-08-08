@@ -68,9 +68,9 @@ Forutsetninger:
 - Det kreves også at `cryptography`- og `requests`-modulene er installert.
 """
 
-import sys
 import socket
 import ssl
+import sys
 import requests
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend

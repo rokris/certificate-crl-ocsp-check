@@ -48,9 +48,9 @@ Utgangskoder:
       ikke er gyldig.
 """
 
-import sys
 import socket
 import ssl
+import sys
 import requests
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
@@ -62,13 +62,16 @@ RED = "\033[91m"
 GREEN = "\033[92m"
 RESET = "\033[0m"
 
+
 def print_error(message):
     """Skriver ut en feilmelding i rød tekst."""
     print(f"{RED}{message}{RESET}")
 
+
 def print_success(message):
     """Skriver ut en suksessmelding i grønn tekst."""
     print(f"{GREEN}{message}{RESET}")
+
 
 def get_certificate(host, port):
     """
@@ -88,6 +91,7 @@ def get_certificate(host, port):
             der_cert = ssock.getpeercert(binary_form=True)
             return x509.load_der_x509_certificate(der_cert, default_backend())
 
+
 def extract_serial_number(cert):
     """
     Ekstraherer serienummeret fra et gitt sertifikat.
@@ -100,6 +104,7 @@ def extract_serial_number(cert):
     """
     return cert.serial_number
 
+
 def format_serial_number(serial_number):
     """
     Formaterer serienummeret som en heksadesimal streng med store bokstaver.
@@ -110,7 +115,8 @@ def format_serial_number(serial_number):
     Returns:
         str: Formaterte serienummer som en 32-tegns heksadesimal streng.
     """
-    return format(serial_number, 'X').zfill(32).upper()
+    return format(serial_number, "X").zfill(32).upper()
+
 
 def get_crl_distribution_points(cert):
     """
@@ -126,8 +132,15 @@ def get_crl_distribution_points(cert):
         # Henter CRL-distribusjonspunkter fra sertifikatet
         cdp_extension = cert.extensions.get_extension_for_oid(ExtensionOID.CRL_DISTRIBUTION_POINTS)
         return [point.full_name[0].value for point in cdp_extension.value if point.full_name]
+        cdp_extension = cert.extensions.get_extension_for_oid(
+            ExtensionOID.CRL_DISTRIBUTION_POINTS
+        )
+        return [
+            point.full_name[0].value for point in cdp_extension.value if point.full_name
+        ]
     except x509.ExtensionNotFound:
         return []
+
 
 def download_crl(url, debug):
     """
@@ -164,6 +177,7 @@ def download_crl(url, debug):
 
     return crl
 
+
 def is_cert_revoked(crl, serial_number):
     """
     Sjekker om et gitt sertifikat er tilbakekalt i en CRL.
@@ -183,6 +197,7 @@ def is_cert_revoked(crl, serial_number):
         if revoked_serial_number_hex == serial_number_hex:
             return True
     return False
+
 
 def check_ocsp_status(domain, debug):
     """
@@ -209,6 +224,7 @@ def check_ocsp_status(domain, debug):
             print_error("OCSP Status: Unknown")
     except Exception as e:
         print_error(f"Feil ved OCSP sjekking: {e}")
+
 
 def main(address, serial_list_file=None, debug=False):
     """
