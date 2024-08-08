@@ -13,28 +13,28 @@
 
 # Funksjon for å fargelegge meldinger
 color_echo() {
-     local color=$1
-     local message=$2
-     local reset="\033[0m"
+    local color=$1
+    local message=$2
+    local reset="\033[0m"
 
-     case $color in
-     red)
-         echo -e "$message$reset"
-         ;;
-     green)
-         echo -e "$message$reset"
-         ;;
-     *)
-         echo "$message" # Uten farge
-         ;;
-     esac
+    case $color in
+    red)
+        echo -e "$message$reset"
+        ;;
+    green)
+        echo -e "$message$reset"
+        ;;
+    *)
+        echo "$message" # Uten farge
+        ;;
+    esac
 }
 
 # Funksjon for å hente sertifikatet fra en gitt URL, WEB, FTP eller SMTP
 get_certificate() {
-     local domain=$1
-     local port=$2
-     local protocol=$3
+    local domain=$1
+    local port=$2
+    local protocol=$3
 
     case "$protocol" in
     ftp)
@@ -51,9 +51,9 @@ get_certificate() {
 
 # Funksjon for å vise sertifikatdetaljer
 show_certificate() {
-     local domain=$1
-     local port=$2
-     local protocol=$3
+    local domain=$1
+    local port=$2
+    local protocol=$3
 
     # Hent sertifikat
     cert=$(get_certificate "$domain" "$port" "$protocol")
@@ -70,9 +70,9 @@ show_certificate() {
 
 # Funksjon for å sjekke om sertifikatet er tilbakekalt via OCSP
 check_revocation_status() {
-     local domain=$1
-     local port=$2
-     local protocol=$3
+    local domain=$1
+    local port=$2
+    local protocol=$3
 
     # Hent sertifikat
     cert=$(get_certificate "$domain" "$port" "$protocol")
@@ -116,7 +116,7 @@ check_revocation_status() {
     fi
 
     # Sjekk sertifikatet mot OCSP
-    echo "$cert" > _cert.pem
+    echo "$cert" >_cert.pem
     response=$(openssl ocsp -issuer _issuer.pem -cert _cert.pem -url "$ocsp_url" -CAfile _issuer.pem -text 2>&1)
 
     if echo "$response" | grep -q "Cert Status: revoked"; then
@@ -138,14 +138,14 @@ main() {
         exit 1
     fi
 
-     # Håndter inputparametere
-     input=$1
-     protocol=$2
-     showcert=$3
+    # Håndter inputparametere
+    input=$1
+    protocol=$2
+    showcert=$3
 
     # Split domain og port fra input
-    IFS=':' read -r domain port <<< "$input"
-    
+    IFS=':' read -r domain port <<<"$input"
+
     # Sett standard port hvis ikke angitt
     if [ -z "$port" ]; then
         if [ "$protocol" = "--ftp" ]; then
