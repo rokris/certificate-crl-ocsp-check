@@ -25,7 +25,7 @@ color_echo() {
 		echo -e "\033[32m$message$reset"
 		;;
 	*)
-		echo "$message"  # Uten farge
+		echo "$message" # Uten farge
 		;;
 	esac
 }
@@ -145,7 +145,7 @@ main() {
 
 	# Split domain og port fra input
 	IFS=':' read -r domain port <<<"$input"
-	
+
 	# Sett standard port hvis ikke angitt
 	if [ -z "$port" ]; then
 		if [ "$protocol" = "--ftp" ]; then
