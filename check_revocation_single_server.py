@@ -42,7 +42,7 @@ def get_certificate(host, port):
     context.options |= ssl.OP_NO_SSLv2 | ssl.OP_NO_SSLv3  # Disable SSLv2 and SSLv3
     context.check_hostname = True  # Verify the hostname against the certificate
     context.verify_mode = ssl.CERT_REQUIRED  # Require server certificate validation
-    
+
     with socket.create_connection((host, port)) as sock:
         with context.wrap_socket(sock, server_hostname=host) as ssock:
             # Henter sertifikatet i DER-format (binærform)
