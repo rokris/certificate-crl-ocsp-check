@@ -210,10 +210,12 @@ def check_ocsp_status(domain, debug):
         ocsp_result = ocspchecker.get_ocsp_status(domain)
         if ocsp_result and isinstance(ocsp_result, list) and len(ocsp_result) > 0:
             # Anta at statusen er den første linjen og inneholder status
-            status_line = next((line for line in ocsp_result if 'OCSP Status:' in line), None)
+            status_line = next(
+                (line for line in ocsp_result if "OCSP Status:" in line), None
+            )
             if status_line:
-                status = status_line.split(':', 1)[1].strip()
-                if status.lower() == 'good':
+                status = status_line.split(":", 1)[1].strip()
+                if status.lower() == "good":
                     print_success(f"OCSP Status: {status}")
                 else:
                     print_error(f"OCSP Status: {status}")
@@ -267,13 +269,17 @@ def main(address, serial_list_file=None, debug=False):
     # Sjekker om sertifikatets serienummer finnes i en oppgitt fil
     if serial_list_file:
         try:
-            with open(serial_list_file, 'r') as file:
+            with open(serial_list_file, "r") as file:
                 serials = [line.split()[0].strip().upper() for line in file.readlines()]
 
             if serial_number_hex in serials:
-                print_error(f"Sertifikatets serienummer finnes i filen: {serial_list_file}")
+                print_error(
+                    f"Sertifikatets serienummer finnes i filen: {serial_list_file}"
+                )
             else:
-                print_success(f"Sertifikatets serienummer finnes ikke i filen: {serial_list_file}")
+                print_success(
+                    f"Sertifikatets serienummer finnes ikke i filen: {serial_list_file}"
+                )
         except FileNotFoundError:
             print_error(f"Feil: Filen '{serial_list_file}' finnes ikke.")
             sys.exit(1)
@@ -306,10 +312,11 @@ if __name__ == "__main__":
         sys.exit(1)
 
     address = sys.argv[1]
-    serial_list_file = sys.argv[2] if len(sys.argv) == 3 and sys.argv[2] != '--debug' else None
-    debug = (
-        (len(sys.argv) == 3 and sys.argv[2] == '--debug') or
-        (len(sys.argv) == 4 and sys.argv[3] == '--debug')
+    serial_list_file = (
+        sys.argv[2] if len(sys.argv) == 3 and sys.argv[2] != '--debug' else None
+    )
+    debug = (len(sys.argv) == 3 and sys.argv[2] == '--debug') or (
+        len(sys.argv) == 4 and sys.argv[3] == '--debug'
     )
 
     # Kjører hovedfunksjonen

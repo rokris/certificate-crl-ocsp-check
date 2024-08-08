@@ -293,8 +293,7 @@ def process_address(address, serial_list_file=None, debug=False):
     if serial_list_file:
         try:
             with open(serial_list_file, "r", encoding="utf-8") as file:
-                serials = [
-                    line.split()[0].strip().upper() for line in file.readlines()]
+                serials = [line.split()[0].strip().upper() for line in file.readlines()]
 
             if serial_number_hex in serials:
                 print_error(
