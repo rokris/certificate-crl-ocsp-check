@@ -36,7 +36,7 @@ def get_certificate(host, port):
         x509.Certificate: SSL-sertifikatet som er hentet fra serveren.
     """
     context = ssl.create_default_context()
-    
+
     # Enforce TLSv1.2 and later
     context.minimum_version = ssl.TLSVersion.TLSv1_2
     context.options |= ssl.OP_NO_SSLv2 | ssl.OP_NO_SSLv3  # Disable SSLv2 and SSLv3
