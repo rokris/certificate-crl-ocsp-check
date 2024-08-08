@@ -21,7 +21,7 @@ jobs:
       with:
         python-version: 3.12.3
 
-    - run: pip install --no-deps -r requirements.txt pyinstaller
+    - run: pip install --no-deps -r requirements.txt pyinstaller pywin32-ctypes
     - run: pyinstaller --onefile check_revocation.py
     # Optionally verify that it works (provided that it does not need user interaction)
     - run: ./dist/check_revocation/check_revocation.py
