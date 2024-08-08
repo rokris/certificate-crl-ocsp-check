@@ -1,53 +1,3 @@
-"""
-Dette programmet sjekker statusen til et SSL-sertifikat for en gitt adresse ved å utføre flere
-kontroller, inkludert
-OCSP-sjekk og CRL-sjekk. Programmet kan også sammenligne sertifikatets serienummer med en liste
-over kjente
-serienumre lagret i en fil.
-
-Funksjoner:
-    - print_error(message): Skriver ut en feilmelding i rød tekst.
-    - print_success(message): Skriver ut en suksessmelding i grønn tekst.
-    - get_certificate(host, port): Henter SSL-sertifikatet fra en gitt vert og port.
-    - extract_serial_number(cert): Ekstraherer serienummeret fra et gitt sertifikat.
-    - format_serial_number(serial_number): Formaterer serienummeret som en heksadesimal streng.
-    - get_crl_distribution_points(cert): Henter CRL-distribusjonspunktene fra et gitt sertifikat.
-    - download_crl(url, debug): Laster ned CRL (Certificate Revocation List) fra en gitt URL og
-      tolker den.
-    - is_cert_revoked(crl, serial_number): Sjekker om et gitt sertifikat er tilbakekalt i en CRL.
-    - check_ocsp_status(domain, debug): Sjekker OCSP-statusen for et gitt domene.
-    - main(address, serial_list_file=None, debug=False): Hovedfunksjonen som utfører
-      sertifikatvalidering, inkludert CRL- og OCSP-sjekker.
-
-Bruk:
-    python script.py <adresse> [fil med serienumre] [--debug]
-
-Parametere:
-    - <adresse>: Adressen til serveren som skal sjekkes (f.eks. "example.com"
-      eller "https://example.com:443").
-    - [fil med serienumre]: (Valgfritt) Fil som inneholder en liste over kjente serienumre som skal
-      sjekkes mot sertifikatets serienummer.
-    - [--debug]: (Valgfritt) Aktiverer detaljert feilsøkingsinformasjon under utførelsen.
-
-Filformater:
-1. **Serienummerliste-fil** (`serial_list_file`):
-   - Format: Tekstfil (.txt)
-   - Hver linje i filen inneholder et serienummer i heksadesimalt format. Eventuelle ekstra felt
-     etter serienummeret blir ignorert.
-   - Serienumrene kan være i store eller små bokstaver, men blir normalisert til store bokstaver
-     i programmet.
-   - Eksempel:
-     ```
-     0123456789ABCDEF0123456789ABCDEF
-     ABCD1234EF567890ABCD1234EF567890
-     ```
-
-Utgangskoder:
-    - 0: Suksess. Sertifikatet er gyldig og ikke tilbakekalt.
-    - 1: Feil. En feil oppstod under sertifikatvalidering eller sjekkene indikerer at sertifikatet
-      ikke er gyldig.
-"""
-
 import socket
 import ssl
 import sys
@@ -86,6 +36,13 @@ def get_certificate(host, port):
         x509.Certificate: SSL-sertifikatet som er hentet fra serveren.
     """
     context = ssl.create_default_context()
+    
+    # Enforce TLSv1.2 and later
+    context.minimum_version = ssl.TLSVersion.TLSv1_2
+    context.options |= ssl.OP_NO_SSLv2 | ssl.OP_NO_SSLv3  # Disable SSLv2 and SSLv3
+    context.check_hostname = True  # Verify the hostname against the certificate
+    context.verify_mode = ssl.CERT_REQUIRED  # Require server certificate validation
+    
     with socket.create_connection((host, port)) as sock:
         with context.wrap_socket(sock, server_hostname=host) as ssock:
             # Henter sertifikatet i DER-format (binærform)
