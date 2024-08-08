@@ -313,10 +313,10 @@ if __name__ == "__main__":
 
     address = sys.argv[1]
     serial_list_file = (
-        sys.argv[2] if len(sys.argv) == 3 and sys.argv[2] != '--debug' else None
+        sys.argv[2] if len(sys.argv) == 3 and sys.argv[2] != "--debug" else None
     )
-    debug = (len(sys.argv) == 3 and sys.argv[2] == '--debug') or (
-        len(sys.argv) == 4 and sys.argv[3] == '--debug'
+    debug = (len(sys.argv) == 3 and sys.argv[2] == "--debug") or (
+        len(sys.argv) == 4 and sys.argv[3] == "--debug"
     )
 
     # Kjører hovedfunksjonen
