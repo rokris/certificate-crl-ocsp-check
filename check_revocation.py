@@ -71,6 +71,7 @@ Forutsetninger:
 import socket
 import ssl
 import sys
+
 import requests
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
@@ -135,7 +136,7 @@ def format_serial_number(serial_number):
     Returns:
         str: Formaterte serienummer som en 32-tegns heksadesimal streng.
     """
-    return format(serial_number, 'X').zfill(32).upper()
+    return format(serial_number, "X").zfill(32).upper()
 
 
 def get_crl_distribution_points(cert):
@@ -154,9 +155,7 @@ def get_crl_distribution_points(cert):
             ExtensionOID.CRL_DISTRIBUTION_POINTS
         )
         return [
-            point.full_name[0].value
-            for point in cdp_extension.value
-            if point.full_name
+            point.full_name[0].value for point in cdp_extension.value if point.full_name
         ]
     except x509.ExtensionNotFound:
         return []
@@ -215,9 +214,7 @@ def is_cert_revoked(crl, serial_number, debug):
 
     # Itererer gjennom alle tilbakekalte sertifikater i CRL
     for revoked_cert in crl:
-        revoked_serial_number_hex = format_serial_number(
-            revoked_cert.serial_number
-        )
+        revoked_serial_number_hex = format_serial_number(revoked_cert.serial_number)
         if debug:
             print(f"Tilbakekalt serienummer i CRL: {revoked_serial_number_hex}")
 
@@ -238,11 +235,10 @@ def check_ocsp_status(domain, debug):
         ocsp_result = ocspchecker.get_ocsp_status(domain)
         if ocsp_result and isinstance(ocsp_result, list) and len(ocsp_result) > 0:
             status_line = next(
-                (line for line in ocsp_result if 'OCSP Status:' in line),
-                None
+                (line for line in ocsp_result if "OCSP Status:" in line), None
             )
             if status_line:
-                status = status_line.split(':', 1)[1].strip()
+                status = status_line.split(":", 1)[1].strip()
                 if status != "GOOD":
                     print_error(f"OCSP Status: {status}")
                 else:
@@ -296,13 +292,14 @@ def process_address(address, serial_list_file=None, debug=False):
     # Sjekker om sertifikatets serienummer finnes i en oppgitt fil
     if serial_list_file:
         try:
-            with open(serial_list_file, 'r', encoding='utf-8') as file:
+            with open(serial_list_file, "r", encoding="utf-8") as file:
                 serials = [
-                    line.split()[0].strip().upper() for line in file.readlines()
-                ]
+                    line.split()[0].strip().upper() for line in file.readlines()]
 
             if serial_number_hex in serials:
-                print_error(f"Sertifikatets serienummer finnes i filen: {serial_list_file}")
+                print_error(
+                    f"Sertifikatets serienummer finnes i filen: {serial_list_file}"
+                )
             else:
                 print_success(
                     f"Sertifikatets serienummer finnes ikke i filen: {serial_list_file}"
@@ -346,7 +343,7 @@ def main(server_list_file=None, serial_list_file=None, debug=False):
     """
     if server_list_file:
         try:
-            with open(server_list_file, 'r', encoding='utf-8') as file:
+            with open(server_list_file, "r", encoding="utf-8") as file:
                 addresses = [line.strip() for line in file.readlines()]
         except FileNotFoundError:
             print_error(f"Feil: Filen '{server_list_file}' finnes ikke.")
@@ -363,7 +360,9 @@ def main(server_list_file=None, serial_list_file=None, debug=False):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2 or len(sys.argv) > 5:
-        print("Bruk: python script.py --serverlist=<fil> [fil med serienumre] [--debug]")
+        print(
+            "Bruk: python script.py --serverlist=<fil> [fil med serienumre] [--debug]"
+        )
         sys.exit(1)
 
     server_list_file = None
