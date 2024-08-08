@@ -1,73 +1,3 @@
-"""
-Dette programmet utfører sjekk av SSL-sertifikater for en liste over servere.
-
-Programmet kan:
-1. Hente og analysere SSL-sertifikatet fra en spesifisert server.
-2. Ekstrahere sertifikatets serienummer og sammenligne det med en liste over kjente serienumre.
-3. Hente CRL (Certificate Revocation List) fra sertifikatets CRL-distribusjonspunkter og
-   sjekke om sertifikatet er trukket tilbake.
-4. Sjekke OCSP (Online Certificate Status Protocol)-statusen for å fastslå om sertifikatet er
-   gyldig eller tilbakekalt.
-
-Funksjoner:
-- `print_error(message)`: Skriver ut en feilmelding i rød farge.
-- `print_success(message)`: Skriver ut en suksessmelding i grønn farge.
-- `get_certificate(host, port)`: Henter SSL-sertifikatet fra en gitt vert og port.
-- `extract_serial_number(cert)`: Ekstraherer serienummeret fra et sertifikat.
-- `format_serial_number(serial_number)`: Formaterer et serienummer til heksadesimal format.
-- `get_crl_distribution_points(cert)`: Henter CRL-distribusjonspunktene fra et sertifikat.
-- `download_crl(url, debug)`: Laster ned CRL fra en gitt URL.
-- `is_cert_revoked(crl, serial_number, debug)`: Sjekker om et sertifikat er trukket tilbake
-   ifølge en CRL.
-- `check_ocsp_status(domain, debug)`: Sjekker OCSP-statusen for en gitt domene.
-- `process_address(address, serial_list_file=None, debug=False)`: Prosesserer en
-   serveradresse, sjekker sertifikatet mot CRL og OCSP.
-- `main(server_list_file=None, serial_list_file=None, debug=False)`: Hovedfunksjonen som
-   leser serveradresser fra en fil og prosesserer hver adresse.
-
-Parametere:
-- `server_list_file` (str, optional): Fil som inneholder en liste over serveradresser som
-   skal prosesseres.
-- `serial_list_file` (str, optional): Fil som inneholder kjente serienumre for sammenligning.
-- `debug` (bool, optional): Aktiverer detaljert feilsøkingsinformasjon. Default er False.
-
-Filformater:
-1. **Serverliste-fil** (`server_list_file`):
-   - Format: Tekstfil (.txt)
-   - Hver linje i filen inneholder en serveradresse, enten som IP-adresse eller domenenavn.
-   - Valgfritt: Serverport kan spesifiseres ved å legge til `:<port>` etter adressen.
-   - Eksempel:
-     ```
-     example.com
-     192.168.1.1:8443
-     another-example.com:443
-     ```
-
-2. **Serienummerliste-fil** (`serial_list_file`):
-   - Format: Tekstfil (.txt)
-   - Hver linje i filen inneholder et serienummer i heksadesimalt format. Eventuelle ekstra
-     felt etter serienummeret blir ignorert.
-   - Serienumrene kan være i store eller små bokstaver, men blir normalisert til store
-     bokstaver i programmet.
-   - Eksempel:
-     ```
-     0123456789ABCDEF0123456789ABCDEF
-     ABCD1234EF567890ABCD1234EF567890
-     ```
-
-Utgangskoder:
-- `0`: Programmet kjørte vellykket og fullførte alle sjekker.
-- `1`: En feil oppstod, for eksempel hvis en fil ikke ble funnet, eller hvis et sertifikat ble
-  trukket tilbake.
-
-Bruk:
-    python script.py --serverlist=<fil> [fil med serienumre] [--debug]
-
-Forutsetninger:
-- Programmet krever at `ocspchecker`-modulen er installert.
-- Det kreves også at `cryptography`- og `requests`-modulene er installert.
-"""
-
 import socket
 import ssl
 import sys
@@ -106,6 +36,7 @@ def get_certificate(host, port):
         x509.Certificate: SSL-sertifikatet som er hentet fra serveren.
     """
     context = ssl.create_default_context()
+
     with socket.create_connection((host, port)) as sock:
         with context.wrap_socket(sock, server_hostname=host) as ssock:
             # Henter sertifikatet i DER-format (binærform)
