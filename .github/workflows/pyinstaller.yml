@@ -1,30 +1,54 @@
 ---
 name: PyInstaller
 
-on:  # yamllint disable-line rule:truthy
-  push: null
-  pull_request: null
+on:
+  push:
+#    branches: master
 
 permissions: { }
 
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: ['windows-latest', 'macos-latest']
-
+  build-windows:
+    runs-on: windows-2019
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-python@v5
-      with:
-        python-version: 3.12.3
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          architecture: 'x64'
+      - name: Install requirements
+        run: |
+          pip install -r requirements.txt
+      - name: Run PyInstaller
+        run: |
+          python -m PyInstaller --onefile check_revocation.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Check Revocation
+          path: dist/check_revocation.exe
 
-    - run: pip install --no-deps -r requirements.txt pyinstaller pywin32-ctypes
-    - run: pyinstaller --onefile check_revocation.py
-    # Optionally verify that it works (provided that it does not need user interaction)
-    - run: ./dist/check_revocation/check_revocation.py
-    - uses: actions/upload-artifact@v4
-      with:
-        path: dist/*
+      - name: create release
+        id: create_release
+        uses: actions/create-release@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.event.head_commit.message }}
+          release_name: ${{ github.event.head_commit.message }}
+          overwrite: true
+          body: |
+            Test Release v1.0.0
+          draft: false
+          prerelease: false
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{steps.create_release.outputs.upload_url}}
+          asset_path: dist/check_revocation.exe
+          asset_name: check_revocation-amd64.exe
+          asset_content_type: application/zip
