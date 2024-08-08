@@ -1,7 +1,10 @@
+---
+name: PyInstaller
+
 on:  # yamllint disable-line rule:truthy
   push: null
   pull_request: null
-  
+
 jobs:
   build:
     runs-on: ${{ matrix.os }}
