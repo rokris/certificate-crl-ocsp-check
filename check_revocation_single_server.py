@@ -131,8 +131,6 @@ def get_crl_distribution_points(cert):
     """
     try:
         # Henter CRL-distribusjonspunkter fra sertifikatet
-        cdp_extension = cert.extensions.get_extension_for_oid(ExtensionOID.CRL_DISTRIBUTION_POINTS)
-        return [point.full_name[0].value for point in cdp_extension.value if point.full_name]
         cdp_extension = cert.extensions.get_extension_for_oid(
             ExtensionOID.CRL_DISTRIBUTION_POINTS
         )
@@ -271,7 +269,7 @@ def main(address, serial_list_file=None, debug=False):
         try:
             with open(serial_list_file, 'r') as file:
                 serials = [line.split()[0].strip().upper() for line in file.readlines()]
-                
+
             if serial_number_hex in serials:
                 print_error(f"Sertifikatets serienummer finnes i filen: {serial_list_file}")
             else:
@@ -301,6 +299,7 @@ def main(address, serial_list_file=None, debug=False):
     # Kall til OCSP-sjekk
     check_ocsp_status(host, debug)
 
+
 if __name__ == "__main__":
     if len(sys.argv) < 2 or len(sys.argv) > 4:
         print_error("Bruk: python script.py <adresse> [fil med serienumre] [--debug]")
@@ -309,7 +308,7 @@ if __name__ == "__main__":
     address = sys.argv[1]
     serial_list_file = sys.argv[2] if len(sys.argv) == 3 and sys.argv[2] != '--debug' else None
     debug = (
-        (len(sys.argv) == 3 and sys.argv[2] == '--debug') or 
+        (len(sys.argv) == 3 and sys.argv[2] == '--debug') or
         (len(sys.argv) == 4 and sys.argv[3] == '--debug')
     )
 
