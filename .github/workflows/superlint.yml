@@ -34,4 +34,3 @@ jobs:
           # Disabled linters
           VALIDATE_JSCPD: false
           VALIDATE_PYTHON_PYLINT: false
-...
