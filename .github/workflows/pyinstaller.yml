@@ -1,0 +1,99 @@
+name: PyInstaller - Windows and macOS
+
+on:
+  push:
+    branches: [ master ]
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+  actions: write
+  attestations: write
+
+jobs:
+
+  createrelease:
+    name: Create Release
+    runs-on: [ubuntu-latest]
+    steps:
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.run_number }}
+        release_name: Release ${{ github.run_number }}
+        draft: false
+        prerelease: false
+    - name: Output Release URL File
+      run: echo "${{ steps.create_release.outputs.upload_url }}" > release_url.txt
+    - name: Save Release URL File for publish
+      uses: actions/upload-artifact@v1
+      with:
+        name: release_url
+        path: release_url.txt
+
+  build:
+    name: Create Executable Files
+    needs: createrelease
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest]
+        include:
+          - os: windows-latest
+            python-version: '3.10'
+            extra-deps: 'pywin32-ctypes pefile'
+            file-extension: '*.exe'
+            branch: 'master'
+          - os: macos-latest
+            python-version: '3.10'
+            extra-deps: 'macholib'
+            file-extension: '*'
+            branch: 'master'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip' # caching pip dependencies
+      - name: Install dependencies
+        run: |
+          pip install --no-deps -r requirements.txt pyinstaller altgraph packaging ${{ matrix.extra-deps }}
+      - name: Run PyInstaller (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          for %%f in (*.py) do pyinstaller --onefile "%%f"
+        shell: cmd
+      - name: Run PyInstaller (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          for f in *.py; do pyinstaller --onefile "$f"; done
+      - name: Upload Executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: Executable-${{ github.run_id }}  # Unique name using GitHub run ID
+          path: dist/${{ matrix.file-extension }}
+          if-no-files-found: warn
+          compression-level: 6
+          overwrite: true
+      - name: Upload binaries to Release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ github.run_id }}
+          file: dist/${{ matrix.file-extension }}
+          file_glob: true
+          overwrite: true
+      - name: Deploy binaries to Repo
+        uses: s0/git-publish-subdir-action@develop
+        env:
+          REPO: self
+          BRANCH: ${{ matrix.branch }}
+          FOLDER: dist
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TARGET_DIR: ${{ matrix.os }}
