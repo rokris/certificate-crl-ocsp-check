@@ -1,6 +1,4 @@
-[![Super-Linter](https://github.com/rokris/certificate-crl-ocsp-check/actions/workflows/superlint.yml/badge.svg)](https://github.com/marketplace/actions/super-linter)
-
-# SSL Certificate Revocation Checker
+# SSL Certificate Revocation Checker [![Super-Linter](https://github.com/rokris/certificate-crl-ocsp-check/actions/workflows/superlint.yml/badge.svg)](https://github.com/marketplace/actions/super-linter)
 
 This Python script is designed to check the revocation status of SSL certificates for a list of servers. It performs checks using both Certificate Revocation Lists (CRLs) and Online Certificate Status Protocol (OCSP). The script also provides options for debugging and can be executed with different configurations based on your needs.
 
