@@ -18,16 +18,16 @@ This Python script is designed to check the revocation status of SSL certificate
 
 1. Clone the repository:
 
-    ```sh
-    git clone https://github.com/yourusername/ssl-cert-checker.git
-    cd ssl-cert-checker
-    ```
+   ```sh
+   git clone https://github.com/yourusername/ssl-cert-checker.git
+   cd ssl-cert-checker
+   ```
 
 2. Install the required dependencies:
 
-    ```sh
-    pip install -r requirements.txt
-    ```
+   ```sh
+   pip install -r requirements.txt
+   ```
 
 ## Usage
 
@@ -45,22 +45,27 @@ You can use this script by either specifying a list of servers via a file or by 
 ```sh
 python check_revocation.py --serverliste servers.txt --crl-liste serials.txt --debug
 ```
+
 This command checks the revocation status of servers listed in servers.txt against the serial numbers in serials.txt and prints detailed debugging information.
 
 Example Server List Format
 The server list file (servers.txt) should contain one server address per line:
+
 ```sh
 example.com
 https://anotherexample.com
 https://anotherexample.com:8443
 example.com:443
 ```
+
 Example CRL List Format
 The CRL list file (serials.txt) should contain one serial number per line, formatted as a 32-character hexadecimal string:
+
 ```sh
 0123456789ABCDEF0123456789ABCDEF
 FEDCBA9876543210FEDCBA9876543210
 ```
+
 Dependencies
 This script relies on the following Python libraries:
 
@@ -71,9 +76,11 @@ This script relies on the following Python libraries:
 - ocspchecker
 
 Install them with:
+
 ```sh
 pip install -r requirements.txt
 ```
+
 Contributing
 Contributions are welcome!
 
