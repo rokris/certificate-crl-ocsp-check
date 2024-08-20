@@ -46,7 +46,8 @@ python check_revocation.py --serverliste servers.txt --crl-liste serials.txt --d
 
 This command checks the revocation status of servers listed in servers.txt against the serial numbers in serials.txt and prints detailed debugging information.
 
-Example Server List Format
+### Example Server List Format
+
 The server list file (servers.txt) should contain one server address per line:
 
 ```sh
@@ -56,7 +57,8 @@ https://anotherexample.com:8443
 example.com:443
 ```
 
-Example CRL List Format
+### Example CRL List Format
+
 The CRL list file (serials.txt) should contain one serial number per line, formatted as a 32-character hexadecimal string:
 
 ```sh
@@ -64,7 +66,8 @@ The CRL list file (serials.txt) should contain one serial number per line, forma
 FEDCBA9876543210FEDCBA9876543210
 ```
 
-Dependencies
+### Dependencies
+
 This script relies on the following Python libraries:
 
 - requests
@@ -79,7 +82,8 @@ Install them with:
 pip install -r requirements.txt
 ```
 
-Contributing
+### Contributing
+
 Contributions are welcome!
 
 Please fork this repository, make your changes, and submit a pull request.
